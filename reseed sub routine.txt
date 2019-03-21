@@ -1,0 +1,38 @@
+Sub reseed(ByVal ConnectionString As String, ByVal TableName As String)
+    Dim con1 As New System.Data.SqlClient.SqlConnection()
+    con1.ConnectionString = ConnectionString
+    con1.Open()
+    Dim parents As New List(Of String)()
+    Try
+        Dim delete_fk As New System.Data.SqlClient.SqlCommand("select object_name(parent_object_id)
+            from sys.foreign_keys
+            WHERE object_name(referenced_object_id) ='" & TableName & "'", con1)
+        Try
+            Dim dr = delete_fk.ExecuteReader()
+            While dr.Read()
+                parents.Add(dr(0).ToString())
+            End While
+            dr.Close()
+        Catch ex As System.Data.SqlClient.SqlException
+            MessageBox.Show("There was an error accessing your data. DETAIL: " & ex.ToString())
+        End Try
+        For Each table As String In parents
+            Dim remove_fk As New System.Data.SqlClient.SqlCommand("ALTER TABLE " & table.ToString & " NOCHECK CONSTRAINT ALL", con1)
+            remove_fk.ExecuteNonQuery()
+        Next
+        Dim copy_back As String = "insert into " + TableName + " select * from #temp1"
+        Dim first_copy As New System.Data.SqlClient.SqlCommand("Select * into #temp1 from " + TableName, con1)
+        Dim delete_Table As New System.Data.SqlClient.SqlCommand("delete from " + TableName, con1)
+        Dim second_copy As New System.Data.SqlClient.SqlCommand(copy_back, con1)
+        first_copy.ExecuteNonQuery()
+        delete_Table.ExecuteNonQuery()
+        second_copy.ExecuteNonQuery()
+        For Each table As String In parents
+            Dim regain_fk As New SqlCommand("ALTER TABLE " & table.ToString & " WITH CHECK CHECK CONSTRAINT ALL", con1)
+            regain_fk.ExecuteNonQuery()
+        Next
+    Catch ex As SqlException
+        MessageBox.Show("Can Not execute command", "Error", MessageBoxButtons.OK)
+    End Try
+    con1.Close()
+End Sub

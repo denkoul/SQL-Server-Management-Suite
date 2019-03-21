@@ -10,4 +10,4 @@ An SQL Server management tool written in VB .net that implements the following f
 
 Report in greek can be found [here](report.pdf)  
 
-(example.png)
+[Example](example.png)

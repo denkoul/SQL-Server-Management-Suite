@@ -7,3 +7,7 @@ An SQL Server management tool written in VB .net that implements the following f
 • Show results in a console  
 • List current's DB's tables  
 • Reseed a table  
+
+Report in greek can be found [here](report.pdf)  
+
+(example.png)
